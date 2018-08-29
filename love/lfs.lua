@@ -37,7 +37,12 @@ end
 function lfs.attributes(path, request_name_or_result_table)
 	local loveinfos = _info(path)
 	if type(request_name_or_result_table) == "string" then
-		return loveinfos[request_name_or_result_table] or nil
+		local lfs2love = {
+			mode = "type",
+			size = "size",
+			modtime = "modification",
+		}
+		return loveinfos[lfs2love[request_name_or_result_table] or request_name_or_result_table] or nil
 	end
 	local r
 	if request_name_or_result_table==nil then
