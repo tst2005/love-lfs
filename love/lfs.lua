@@ -12,10 +12,35 @@ local lfs = {}
 -- [x] lfs.attributes (filepath [, request_name | result_table])
 --love.filesystem.getSize ; love.filesystem.getLastModified
 local _info = love.filesystem.getInfo
+if not _info then
+	local isd, isf, isl = love.filesystem.isDirectory, love.filesystem.isFile, love.filesystem.isSymlink
+	function _gettype(path)
+		if isl and isl(path) then return "link" end
+		if isd(path) then
+			return "directory"
+		elseif isf(path) then
+			return "file"
+		else
+			return "other"
+		end
+	end
+	_info = function(path, _not_implemented)
+		assert(not _not_implemented)
+		return {
+			type = _gettype(path),
+			size = nil,
+			modtime = love.filesystem.getLastModified and love.filesystem.getLastModified(path),
+		}
+	end
+end
+
 function lfs.attributes(path, request_name_or_result_table)
-	local r
+	local loveinfos = _info(path)
 	if type(request_name_or_result_table) == "string" then
-		local loveinfos = _info(path)
+		return loveinfos[request_name_or_result_table] or nil
+	end
+	local r
+	if request_name_or_result_table==nil then
 		local filetype = loveinfos.type
 		if filetype == "symlink" then
 			filetype = "link"
@@ -40,7 +65,6 @@ function lfs.attributes(path, request_name_or_result_table)
 			permissions = nil,
 			blocks = nil,
 			blksize = nil,
-			
 		}
 	else
 		--r = request_name_or_result_table
@@ -94,6 +118,7 @@ end
 
 -- [ ] lfs.setmode (file, mode)
 -- [?] lfs.symlinkattributes (filepath [, aname])
+lfs.symlinkattributes = lfs.attributes
 
 -- [?] lfs.touch (filepath [, atime [, mtime]])
 --local open = love.filesystem.newFile("data.txt")
