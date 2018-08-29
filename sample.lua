@@ -4,5 +4,9 @@ end
 local lfs = require "love.lfs"
 print(lfs._VERSION)
 
---local find = require "lfs-find"
---find.lfs = lfs -- use love.lfs
+print("loading lfs-find...")
+local find = require "lfs-find"
+find.lfs = lfs -- use love.lfs
+
+print("loading testcode...")
+require"testcode"(find, ".")
